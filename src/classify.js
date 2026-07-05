@@ -41,3 +41,28 @@ const dirParts = (rel) => rel.split(/[\\/]/).slice(0, -1);
  * @returns {{category:string, trim:boolean, binary:boolean, reason:string}}
  * category ∈ vendored|build|lockfile|minified|data|generated|large|binary|source
  */
+export function classify(rel, { size = 0, tokens = 0, sample = "", maxTokens = 2000 }) {
+  const name = basename(rel).toLowerCase();
+  const ext = extname(name);
+  const parts = dirParts(rel).map((p) => p.toLowerCase());
+
+  if (BINARY_EXT.has(ext)) return { category: "binary", trim: true, binary: true, reason: "binary asset (skipped by agents, excluded to be safe)" };
+  if (parts.some((p) => VENDOR_DIRS.includes(p))) return { category: "vendored", trim: true, binary: false, reason: "vendored dependency directory" };
+  if (parts.some((p) => BUILD_DIRS.includes(p))) return { category: "build", trim: true, binary: false, reason: "build / generated output directory" };
+  if (LOCKFILES.has(name)) return { category: "lockfile", trim: true, binary: false, reason: "dependency lockfile" };
+  if (MINIFIED.test(name)) return { category: "minified", trim: true, binary: false, reason: "minified / bundled / sourcemap" };
+  if (DATA_EXT.has(ext)) return { category: "data", trim: true, binary: false, reason: "data file" };
+  if (sample && GENERATED_MARKERS.test(sample)) return { category: "generated", trim: true, binary: false, reason: 'marked "generated / do not edit"' };
+  // Large structured data masquerading as source (big JSON/YAML/XML/SVG).
+  if ([".json", ".yaml", ".yml", ".xml", ".svg"].includes(ext) && tokens > maxTokens)
+    return { category: "data", trim: true, binary: false, reason: `large ${ext.slice(1)} (${fmt(tokens)} tokens)` };
+  // Anything else that is simply huge is worth flagging (kept as a soft "large").
+  if (tokens > maxTokens * 4)
+    return { category: "large", trim: true, binary: false, reason: `very large file (${fmt(tokens)} tokens)` };
+  return { category: "source", trim: false, binary: false, reason: "source" };
+}
+
+const fmt = (n) => (n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, "") + "k" : "" + n);
+export { fmt };
+
+/** Ignore glob for a path/category (dir categories collapse to the top dir). */
