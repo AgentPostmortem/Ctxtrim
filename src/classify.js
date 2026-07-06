@@ -66,3 +66,12 @@ const fmt = (n) => (n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/
 export { fmt };
 
 /** Ignore glob for a path/category (dir categories collapse to the top dir). */
+export function ignorePattern(rel) {
+  const parts = rel.split(/[\\/]/);
+  const lower = parts.map((p) => p.toLowerCase());
+  for (const d of [...VENDOR_DIRS, ...BUILD_DIRS]) {
+    const i = lower.indexOf(d);
+    if (i !== -1) return parts.slice(0, i + 1).join("/") + "/";
+  }
+  return rel;
+}
