@@ -33,3 +33,52 @@ function fileInfo(abs, size) {
  * @param {{maxTokens?:number}} opts
  * @returns {{root, files, totals}}
  */
+export function scanRepo(target, opts = {}) {
+  const maxTokens = opts.maxTokens ?? 2000;
+  const root = existsSync(target) && statSync(target).isDirectory() ? target : ".";
+  const files = [];
+
+  const walk = (dir) => {
+    let entries;
+    try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const e of entries) {
+      if (ALWAYS_SKIP.has(e.name)) continue;
+      const abs = join(dir, e.name);
+      if (e.isSymbolicLink()) continue;
+      if (e.isDirectory()) { walk(abs); continue; }
+      if (!e.isFile()) continue;
+      let size = 0;
+      try { size = statSync(abs).size; } catch { continue; }
+      const rel = relative(root, abs).split(sep).join("/");
+      const info = fileInfo(abs, size);
+      const c = classify(rel, { size, tokens: info.tokens, sample: info.sample, maxTokens });
+      const tokens = c.binary ? 0 : info.tokens; // binaries carry no text tokens
+      files.push({ rel, size, tokens, category: c.category, trim: c.trim, binary: c.binary, reason: c.reason });
+    }
+  };
+  walk(root);
+
+  const textFiles = files.filter((f) => !f.binary);
+  const total = sum(textFiles.map((f) => f.tokens));
+  const trimTokens = sum(textFiles.filter((f) => f.trim).map((f) => f.tokens));
+  const patterns = uniq(files.filter((f) => f.trim).map((f) => ignorePattern(f.rel))).sort();
+
+  files.sort((a, b) => b.tokens - a.tokens);
+  return {
+    root,
+    files,
+    patterns,
+    totals: {
+      files: files.length,
+      textFiles: textFiles.length,
+      totalTokens: total,
+      trimTokens,
+      keepTokens: total - trimTokens,
+      wastePct: total ? Math.round((trimTokens / total) * 100) : 0,
+      byCategory: countBy(files.filter((f) => f.trim)),
+    },
+  };
+}
+
+const sum = (a) => a.reduce((x, y) => x + y, 0);
+const uniq = (a) => [...new Set(a)];
