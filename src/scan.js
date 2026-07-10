@@ -82,3 +82,11 @@ export function scanRepo(target, opts = {}) {
 
 const sum = (a) => a.reduce((x, y) => x + y, 0);
 const uniq = (a) => [...new Set(a)];
+function countBy(files) {
+  const out = {};
+  for (const f of files) {
+    out[f.category] = out[f.category] || { files: 0, tokens: 0 };
+    out[f.category].files++; out[f.category].tokens += f.tokens;
+  }
+  return out;
+}
