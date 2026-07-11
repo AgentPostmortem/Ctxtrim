@@ -19,3 +19,13 @@ export function block(patterns) {
 }
 
 /** Insert or replace the managed block in existing content (keeps the user's own lines). */
+export function merge(existing, patterns) {
+  const b = block(patterns);
+  if (existing.includes(START) && existing.includes(END)) {
+    return existing.replace(new RegExp(escape(START) + "[\\s\\S]*?" + escape(END)), b).trimEnd() + "\n";
+  }
+  const base = existing.trim();
+  return (base ? base + "\n\n" : "") + b + "\n";
+}
+
+/** @returns {{file, action:'created'|'updated', patterns:number}[]} */
