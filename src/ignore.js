@@ -29,3 +29,18 @@ export function merge(existing, patterns) {
 }
 
 /** @returns {{file, action:'created'|'updated', patterns:number}[]} */
+export function writeIgnores(root, patterns, targets) {
+  const results = [];
+  for (const t of targets) {
+    const fname = TARGETS[t];
+    if (!fname) continue;
+    const path = join(root, fname);
+    const existed = existsSync(path);
+    const prev = existed ? readFileSync(path, "utf8") : "";
+    writeFileSync(path, merge(prev, patterns));
+    results.push({ file: fname, action: existed ? "updated" : "created", patterns: patterns.length });
+  }
+  return results;
+}
+
+const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
