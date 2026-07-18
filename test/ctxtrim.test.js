@@ -26,3 +26,20 @@ test("classify buckets files correctly", () => {
   assert.equal(classify("big.json", { tokens: 9000, maxTokens: 2000 }).category, "data");
 });
 
+test("scan finds trimmable bloat and keeps source", () => {
+  const s = scanRepo(repo);
+  assert.ok(s.totals.trimTokens > 0);
+  assert.ok(s.totals.wastePct > 50, `expected mostly-junk fixture, got ${s.totals.wastePct}%`);
+  // the three bloat files are flagged
+  const trimmed = new Set(s.files.filter((f) => f.trim).map((f) => f.rel));
+  assert.ok(trimmed.has("package-lock.json"));
+  assert.ok(trimmed.has("data/seed.json"));
+  assert.ok([...trimmed].some((p) => p.startsWith("dist/")));
+  // real source is NOT trimmed
+  const src = s.files.find((f) => f.rel === "src/index.js");
+  assert.equal(src.trim, false);
+  // patterns collapse the build dir
+  assert.ok(s.patterns.includes("dist/"));
+  assert.ok(s.patterns.includes("package-lock.json"));
+});
+
