@@ -43,3 +43,16 @@ test("scan finds trimmable bloat and keeps source", () => {
   assert.ok(s.patterns.includes("package-lock.json"));
 });
 
+test("ignore block is idempotent (managed block replaced, user lines kept)", () => {
+  const patterns = ["dist/", "package-lock.json"];
+  const first = merge("# my own rule\n*.log\n", patterns);
+  assert.ok(first.includes("# my own rule"));
+  assert.ok(first.includes(block(patterns)));
+  // re-running with new patterns replaces only the managed block, keeps user lines once
+  const second = merge(first, ["dist/", "coverage/"]);
+  assert.ok(second.includes("# my own rule"));
+  assert.ok(second.includes("coverage/"));
+  assert.equal((second.match(/ctxtrim \(managed\)/g) || []).length, 2); // one start, one end
+  assert.ok(!second.includes("package-lock.json"), "old managed pattern should be gone");
+});
+
