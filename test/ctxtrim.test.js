@@ -56,3 +56,8 @@ test("ignore block is idempotent (managed block replaced, user lines kept)", () 
   assert.ok(!second.includes("package-lock.json"), "old managed pattern should be gone");
 });
 
+test("clean repo (only source) reports nothing to trim", () => {
+  // scanning the src subdir alone = only source
+  const s = scanRepo(join(repo, "src"));
+  assert.equal(s.totals.trimTokens, 0);
+});
