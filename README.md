@@ -38,3 +38,27 @@ ctxtrim  ·  my-repo  ·  412 files
 
 Estimates use the widely-cited ~4-chars-per-token rule (great for ranking and relative savings; pass `--price` to match your model).
 
+## Usage
+
+```bash
+npx ctxtrim [path] [options]
+
+npx ctxtrim                       # report on the current repo
+npx ctxtrim --write               # write .cursorignore + .aiexclude
+npx ctxtrim ./repo --price 15     # estimate at Opus-tier input pricing
+npx ctxtrim --format json         # machine-readable
+npx ctxtrim --fail-on-waste 40    # CI: exit 1 if 40%+ of context is junk
+```
+
+| Flag | Default | Meaning |
+| --- | --- | --- |
+| `--write` | off | create/update the ignore files (otherwise report only) |
+| `--targets <list>` | `cursor,gemini` | `cursor`→`.cursorignore`, `gemini`→`.aiexclude`, `generic`→`.aiignore` |
+| `--price <usd>` | `3` | $ per 1M input tokens for the estimate |
+| `--max-tokens <n>` | `2000` | a file over this counts as "large" data |
+| `--top <n>` | `12` | offenders to list |
+| `--format <text\|json>` | `text` | |
+| `--fail-on-waste <pct>` | — | exit `1` if trimmable context ≥ pct (CI gate) |
+
+**Ignore files it writes** (all real formats the tools honor): `.cursorignore` (Cursor), `.aiexclude` (Gemini Code Assist / Firebase Studio), `.aiignore` (generic). Writes are **idempotent** — a managed block between markers, so your own rules are preserved and re-runs just update the block.
+
