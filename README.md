@@ -73,3 +73,6 @@ npx ctxtrim --fail-on-waste 40    # CI: exit 1 if 40%+ of context is junk
 
 Pairs with [ctxlens](https://github.com/royalpinto007/Ctxlens) (profiles a *running* agent's context) — ctxtrim is the *static, pre-emptive* half. Part of a small agent-tooling set alongside [skill-audit](https://github.com/royalpinto007/skill-audit) and [mcp-audit](https://github.com/royalpinto007/MCP-audit).
 
+## License
+
+MIT
