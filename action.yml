@@ -1,0 +1,27 @@
+name: "ctxtrim"
+description: "Report or gate on AI-context bloat: token cost per file for Claude Code / Cursor / Codex."
+author: "Royal Simpson Pinto"
+branding:
+  icon: "scissors"
+  color: "green"
+inputs:
+  path:
+    description: "Repo path to scan."
+    required: false
+    default: "."
+  fail-on-waste:
+    description: "Exit 1 if trimmable context percentage is at least this."
+    required: false
+    default: ""
+  price:
+    description: "USD per 1M input tokens for the estimate."
+    required: false
+    default: "3"
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+        ARGS="${{ inputs.path }} --price ${{ inputs.price }}"
+        if [ -n "${{ inputs.fail-on-waste }}" ]; then ARGS="$ARGS --fail-on-waste ${{ inputs.fail-on-waste }}"; fi
+        node "${{ github.action_path }}/bin/ctxtrim.js" $ARGS
