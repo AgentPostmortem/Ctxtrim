@@ -8,6 +8,7 @@ npx ctxtrim --write    # write .cursorignore + .aiexclude to cut it
 ```
 
 [![npm](https://img.shields.io/npm/v/ctxtrim.svg)](https://www.npmjs.com/package/ctxtrim) [![CI](https://github.com/royalpinto007/ctxtrim/actions/workflows/ci.yml/badge.svg)](https://github.com/royalpinto007/ctxtrim/actions) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+**npm:** https://www.npmjs.com/package/ctxtrim  ·  **Source:** https://github.com/royalpinto007/Ctxtrim
 
 ---
 
