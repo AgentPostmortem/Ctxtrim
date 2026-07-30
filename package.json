@@ -3,17 +3,13 @@
   "version": "0.1.0",
   "description": "Trim what bloats your AI coding context. Scan a repo, find the high-cost/low-value files ballooning your Claude Code / Cursor / Codex context, and write ignore files to cut token cost. Zero dependencies.",
   "type": "module",
-  "bin": {
-    "ctxtrim": "bin/ctxtrim.js"
-  },
-  "files": [
-    "bin",
-    "src",
-    "README.md",
-    "LICENSE"
-  ],
-  "scripts": {
-    "test": "node --test"
-  },
-  "license": "MIT"
+  "bin": { "ctxtrim": "bin/ctxtrim.js" },
+  "files": ["bin", "src", "README.md", "LICENSE"],
+  "scripts": { "test": "node --test" },
+  "keywords": ["claude","claude-code","cursor","codex","tokens","token-count","context","cost","cursorignore","aiexclude","llm","ai-coding","developer-tools"],
+  "author": "Royal Simpson Pinto",
+  "license": "MIT",
+  "homepage": "https://github.com/royalpinto007/Ctxtrim",
+  "repository": { "type": "git", "url": "https://github.com/royalpinto007/Ctxtrim.git" },
+  "engines": { "node": ">=18" }
 }
