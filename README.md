@@ -7,8 +7,8 @@ npx ctxtrim            # see what's costing you tokens
 npx ctxtrim --write    # write .cursorignore + .aiexclude to cut it
 ```
 
-[![npm](https://img.shields.io/npm/v/ctxtrim.svg)](https://www.npmjs.com/package/ctxtrim) [![CI](https://github.com/royalpinto007/ctxtrim/actions/workflows/ci.yml/badge.svg)](https://github.com/royalpinto007/ctxtrim/actions) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-**npm:** https://www.npmjs.com/package/ctxtrim  ·  **Source:** https://github.com/royalpinto007/Ctxtrim
+[![npm](https://img.shields.io/npm/v/ctxtrim.svg)](https://www.npmjs.com/package/ctxtrim) [![CI](https://github.com/AgentPostmortem/ctxtrim/actions/workflows/ci.yml/badge.svg)](https://github.com/AgentPostmortem/ctxtrim/actions) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+**npm:** https://www.npmjs.com/package/ctxtrim  ·  **Source:** https://github.com/AgentPostmortem/Ctxtrim
 
 ---
 
@@ -72,7 +72,7 @@ npx ctxtrim --fail-on-waste 40    # CI: exit 1 if 40%+ of context is junk
 
 ## Related
 
-Pairs with [ctxlens](https://github.com/royalpinto007/Ctxlens) (profiles a *running* agent's context) — ctxtrim is the *static, pre-emptive* half. Part of a small agent-tooling set alongside [skill-audit](https://github.com/royalpinto007/skill-audit) and [mcp-audit](https://github.com/royalpinto007/MCP-audit).
+Pairs with [ctxlens](https://github.com/AgentPostmortem/Ctxlens) (profiles a *running* agent's context) — ctxtrim is the *static, pre-emptive* half. Part of a small agent-tooling set alongside [skill-audit](https://github.com/AgentPostmortem/skill-audit) and [mcp-audit](https://github.com/AgentPostmortem/MCP-audit).
 
 ## License
 

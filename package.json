@@ -9,7 +9,7 @@
   "keywords": ["claude","claude-code","cursor","codex","tokens","token-count","context","cost","cursorignore","aiexclude","llm","ai-coding","developer-tools"],
   "author": "Royal Simpson Pinto",
   "license": "MIT",
-  "homepage": "https://github.com/royalpinto007/Ctxtrim",
-  "repository": { "type": "git", "url": "https://github.com/royalpinto007/Ctxtrim.git" },
+  "homepage": "https://github.com/AgentPostmortem/Ctxtrim",
+  "repository": { "type": "git", "url": "https://github.com/AgentPostmortem/Ctxtrim.git" },
   "engines": { "node": ">=18" }
 }

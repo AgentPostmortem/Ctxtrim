@@ -5,7 +5,7 @@ Thanks for helping improve **Ctxtrim**. Bug reports, fixes, and features are all
 ## Getting set up
 
 ```bash
-git clone https://github.com/royalpinto007/Ctxtrim
+git clone https://github.com/AgentPostmortem/Ctxtrim
 cd Ctxtrim
 npm test    # runs `node --test`, zero dependencies
 ```
