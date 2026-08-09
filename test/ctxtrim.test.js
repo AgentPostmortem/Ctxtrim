@@ -1,9 +1,12 @@
+import fs, { mkdtempSync, rmSync, truncateSync, writeFileSync } from "node:fs";
+import { syncBuiltinESMExports } from "node:module";
+import { tmpdir } from "node:os";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { scanRepo, estimateTokens } from "../src/scan.js";
-import { classify } from "../src/classify.js";
+import { classify, classifyPath } from "../src/classify.js";
 import { merge, block } from "../src/ignore.js";
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "sample-repo");
@@ -24,6 +27,75 @@ test("classify buckets files correctly", () => {
   assert.equal(classify("src/index.js", { tokens: 50 }).trim, false);
   // big json flagged as data
   assert.equal(classify("big.json", { tokens: 9000, maxTokens: 2000 }).category, "data");
+  assert.deepEqual(classifyPath("logo.png"), classify("logo.png", {}));
+  assert.equal(classifyPath("generated.js"), null);
+  assert.equal(classifyPath("big.json"), null);
+});
+
+test("scan skips binary reads and retains content-dependent classification", (t) => {
+  const root = mkdtempSync(join(tmpdir(), "ctxtrim-binary-read-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+
+  const image = join(root, "pixel.png");
+  const document = join(root, "manual.pdf");
+  const generated = join(root, "generated.js");
+  const largeJson = join(root, "large.json");
+  writeFileSync(image, "not really an image");
+  writeFileSync(document, "");
+  truncateSync(document, 5_000_001);
+  writeFileSync(generated, "// @generated\nexport const value = 1;\n");
+  writeFileSync(largeJson, JSON.stringify({ payload: "x".repeat(5_100_000) }));
+
+  const readFiles = [];
+  const openedFiles = new Map();
+  const partialReadFiles = [];
+  const readFileSync = fs.readFileSync;
+  const openSync = fs.openSync;
+  const readSync = fs.readSync;
+  t.mock.method(fs, "readFileSync", (...args) => {
+    readFiles.push(String(args[0]));
+    return readFileSync(...args);
+  });
+  t.mock.method(fs, "openSync", (...args) => {
+    const fd = openSync(...args);
+    openedFiles.set(fd, String(args[0]));
+    return fd;
+  });
+  t.mock.method(fs, "readSync", (...args) => {
+    partialReadFiles.push(openedFiles.get(args[0]));
+    return readSync(...args);
+  });
+  syncBuiltinESMExports();
+
+  let result;
+  try {
+    result = scanRepo(root);
+  } finally {
+    t.mock.restoreAll();
+    syncBuiltinESMExports();
+  }
+
+  assert.ok(!readFiles.includes(image));
+  assert.ok(!readFiles.includes(document));
+  assert.ok(![...openedFiles.values()].includes(document));
+  assert.ok(!partialReadFiles.includes(document));
+  assert.ok(readFiles.includes(generated));
+  assert.ok([...openedFiles.values()].includes(largeJson));
+  assert.ok(partialReadFiles.includes(largeJson));
+
+  for (const rel of ["pixel.png", "manual.pdf"]) {
+    const actual = result.files.find((file) => file.rel === rel);
+    const expected = classify(rel, {});
+    assert.deepEqual({
+      category: actual.category,
+      trim: actual.trim,
+      binary: actual.binary,
+      reason: actual.reason,
+    }, expected);
+    assert.equal(actual.tokens, 0);
+  }
+  assert.equal(result.files.find((file) => file.rel === "generated.js").category, "generated");
+  assert.equal(result.files.find((file) => file.rel === "large.json").category, "data");
 });
 
 test("scan finds trimmable bloat and keeps source", () => {

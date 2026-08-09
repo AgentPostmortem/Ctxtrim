@@ -3,6 +3,13 @@
 All notable changes to this project are documented here, following
 [Keep a Changelog](https://keepachangelog.com/) and semantic versioning.
 
+## [0.1.2] - 2026-08-09
+
+### Fixed
+
+- Skip reading binary file contents during repository scans while preserving
+  their existing classification and zero-token accounting.
+
 ## [0.1.1] - 2026-08-06
 
 ### Changed

@@ -1,7 +1,7 @@
 // Walk a repo, estimate each file's token cost, classify it, and aggregate.
 import { readdirSync, readFileSync, statSync, openSync, readSync, closeSync, existsSync } from "node:fs";
 import { join, relative, sep } from "node:path";
-import { classify, ignorePattern } from "./classify.js";
+import { classify, classifyPath, ignorePattern } from "./classify.js";
 
 const ALWAYS_SKIP = new Set([".git"]);
 const MAX_READ = 5_000_000; // bytes fully read; larger files are estimated from size
@@ -50,8 +50,9 @@ export function scanRepo(target, opts = {}) {
       let size = 0;
       try { size = statSync(abs).size; } catch { continue; }
       const rel = relative(root, abs).split(sep).join("/");
-      const info = fileInfo(abs, size);
-      const c = classify(rel, { size, tokens: info.tokens, sample: info.sample, maxTokens });
+      const pathClassification = classifyPath(rel);
+      const info = pathClassification?.binary ? { tokens: 0, sample: "" } : fileInfo(abs, size);
+      const c = pathClassification ?? classify(rel, { size, tokens: info.tokens, sample: info.sample, maxTokens });
       const tokens = c.binary ? 0 : info.tokens; // binaries carry no text tokens
       files.push({ rel, size, tokens, category: c.category, trim: c.trim, binary: c.binary, reason: c.reason });
     }
