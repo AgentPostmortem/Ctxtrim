@@ -1,4 +1,6 @@
 import fs, { mkdtempSync, rmSync, truncateSync, writeFileSync } from "node:fs";
+import { existsSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { syncBuiltinESMExports } from "node:module";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
@@ -10,6 +12,7 @@ import { classify, classifyPath } from "../src/classify.js";
 import { merge, block } from "../src/ignore.js";
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "sample-repo");
+const cli = join(dirname(fileURLToPath(import.meta.url)), "..", "bin", "ctxtrim.js");
 
 test("token estimate is ~chars/4", () => {
   assert.equal(estimateTokens("aaaaaaaa"), 2); // 8 chars
@@ -132,4 +135,21 @@ test("clean repo (only source) reports nothing to trim", () => {
   // scanning the src subdir alone = only source
   const s = scanRepo(join(repo, "src"));
   assert.equal(s.totals.trimTokens, 0);
+});
+
+test("unknown --targets values fail before writing ignore files", (t) => {
+  const root = mkdtempSync(join(tmpdir(), "ctxtrim-invalid-target-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  writeFileSync(join(root, "package-lock.json"), "{}\n");
+
+  const result = spawnSync(process.execPath, [cli, root, "--write", "--targets", "bogus,cursor"], {
+    encoding: "utf8",
+  });
+
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /unknown --targets: bogus/);
+  assert.match(result.stderr, /Valid targets: cursor, gemini, generic/);
+  assert.equal(existsSync(join(root, ".cursorignore")), false);
+  assert.equal(existsSync(join(root, ".aiexclude")), false);
+  assert.equal(existsSync(join(root, ".aiignore")), false);
 });
