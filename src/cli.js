@@ -73,7 +73,12 @@ export function run(argv, { version }) {
   const numberError = numericOptionError(o);
   if (numberError) { process.stderr.write(numberError); return 2; }
   if (!["text", "json"].includes(o.format)) { process.stderr.write(`ctxtrim: unknown --format\n`); return 2; }
-  const targets = o.targets.split(",").map((s) => s.trim()).filter((s) => TARGETS[s]);
+  const targets = o.targets.split(",").map((s) => s.trim()).filter(Boolean);
+  const unknownTargets = targets.filter((s) => !TARGETS[s]);
+  if (unknownTargets.length) {
+    process.stderr.write(`ctxtrim: unknown --targets: ${unknownTargets.join(", ")}. Valid targets: ${Object.keys(TARGETS).join(", ")}\n`);
+    return 2;
+  }
 
   const scan = scanRepo(target, { maxTokens: o.maxTokens });
   let wrote = null;

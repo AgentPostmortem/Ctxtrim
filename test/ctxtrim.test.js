@@ -1,4 +1,4 @@
-import fs, { mkdtempSync, rmSync, truncateSync, writeFileSync } from "node:fs";
+import fs, { existsSync, mkdtempSync, rmSync, truncateSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { syncBuiltinESMExports } from "node:module";
 import { tmpdir } from "node:os";
@@ -11,7 +11,7 @@ import { classify, classifyPath } from "../src/classify.js";
 import { merge, block } from "../src/ignore.js";
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "sample-repo");
-const bin = fileURLToPath(new URL("../bin/ctxtrim.js", import.meta.url));
+const cli = join(dirname(fileURLToPath(import.meta.url)), "..", "bin", "ctxtrim.js");
 
 test("token estimate is ~chars/4", () => {
   assert.equal(estimateTokens("aaaaaaaa"), 2); // 8 chars
@@ -147,8 +147,25 @@ test("CLI rejects non-finite and negative numeric options", () => {
   ];
 
   for (const args of invalid) {
-    const result = spawnSync(process.execPath, [bin, repo, ...args], { encoding: "utf8" });
+    const result = spawnSync(process.execPath, [cli, repo, ...args], { encoding: "utf8" });
     assert.equal(result.status, 2, `${args.join(" ")} should fail with exit 2\n${result.stderr}`);
     assert.match(result.stderr, /ctxtrim: invalid --/);
   }
+});
+
+test("unknown --targets values fail before writing ignore files", (t) => {
+  const root = mkdtempSync(join(tmpdir(), "ctxtrim-invalid-target-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  writeFileSync(join(root, "package-lock.json"), "{}\n");
+
+  const result = spawnSync(process.execPath, [cli, root, "--write", "--targets", "bogus,cursor"], {
+    encoding: "utf8",
+  });
+
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /unknown --targets: bogus/);
+  assert.match(result.stderr, /Valid targets: cursor, gemini, generic/);
+  assert.equal(existsSync(join(root, ".cursorignore")), false);
+  assert.equal(existsSync(join(root, ".aiexclude")), false);
+  assert.equal(existsSync(join(root, ".aiignore")), false);
 });

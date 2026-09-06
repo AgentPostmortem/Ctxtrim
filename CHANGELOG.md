@@ -9,6 +9,8 @@ All notable changes to this project are documented here, following
 
 - Reject non-finite and negative numeric CLI options instead of scanning with
   invalid thresholds or silently ignoring invalid waste gates.
+- Reject unknown `--targets` values with a clear error instead of silently
+  skipping all ignore-file writes.
 
 ## [0.1.2] - 2026-08-09
 
