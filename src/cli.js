@@ -37,18 +37,31 @@ function parse(argv) {
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const val = () => (a.includes("=") ? a.split("=")[1] : argv[++i]);
+    const has = (name) => a === name || a.startsWith(`${name}=`);
     if (a === "-h" || a === "--help") o.help = true;
     else if (a === "-v" || a === "--version") o.version = true;
     else if (a === "--write") o.write = true;
-    else if (a.startsWith("--targets")) o.targets = val();
-    else if (a.startsWith("--price")) o.price = Number(val());
-    else if (a.startsWith("--max-tokens")) o.maxTokens = Number(val());
-    else if (a.startsWith("--top")) o.top = Number(val());
-    else if (a.startsWith("--format")) o.format = val();
-    else if (a.startsWith("--fail-on-waste")) o.failOnWaste = Number(val());
+    else if (has("--targets")) o.targets = val();
+    else if (has("--price")) o.price = Number(val());
+    else if (has("--max-tokens")) o.maxTokens = Number(val());
+    else if (has("--top")) o.top = Number(val());
+    else if (has("--format")) o.format = val();
+    else if (has("--fail-on-waste")) o.failOnWaste = Number(val());
     else if (!a.startsWith("-")) o.path = a;
   }
   return o;
+}
+
+function numericOptionError(o) {
+  if (!Number.isFinite(o.price) || o.price < 0)
+    return "ctxtrim: invalid --price: expected a non-negative number\n";
+  if (!Number.isFinite(o.maxTokens) || o.maxTokens < 0)
+    return "ctxtrim: invalid --max-tokens: expected a non-negative number\n";
+  if (!Number.isInteger(o.top) || o.top < 0)
+    return "ctxtrim: invalid --top: expected a non-negative integer\n";
+  if (o.failOnWaste != null && (!Number.isFinite(o.failOnWaste) || o.failOnWaste < 0 || o.failOnWaste > 100))
+    return "ctxtrim: invalid --fail-on-waste: expected a percentage from 0 to 100\n";
+  return null;
 }
 
 export function run(argv, { version }) {
@@ -57,6 +70,8 @@ export function run(argv, { version }) {
   if (o.version) { process.stdout.write(version + "\n"); return 0; }
   const target = o.path || ".";
   if (!existsSync(target)) { process.stderr.write(`ctxtrim: path not found: ${target}\n`); return 2; }
+  const numberError = numericOptionError(o);
+  if (numberError) { process.stderr.write(numberError); return 2; }
   if (!["text", "json"].includes(o.format)) { process.stderr.write(`ctxtrim: unknown --format\n`); return 2; }
   const targets = o.targets.split(",").map((s) => s.trim()).filter((s) => TARGETS[s]);
 

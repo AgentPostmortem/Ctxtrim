@@ -1,4 +1,5 @@
 import fs, { mkdtempSync, rmSync, truncateSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { syncBuiltinESMExports } from "node:module";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
@@ -10,6 +11,7 @@ import { classify, classifyPath } from "../src/classify.js";
 import { merge, block } from "../src/ignore.js";
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "sample-repo");
+const bin = fileURLToPath(new URL("../bin/ctxtrim.js", import.meta.url));
 
 test("token estimate is ~chars/4", () => {
   assert.equal(estimateTokens("aaaaaaaa"), 2); // 8 chars
@@ -132,4 +134,21 @@ test("clean repo (only source) reports nothing to trim", () => {
   // scanning the src subdir alone = only source
   const s = scanRepo(join(repo, "src"));
   assert.equal(s.totals.trimTokens, 0);
+});
+
+test("CLI rejects non-finite and negative numeric options", () => {
+  const invalid = [
+    ["--max-tokens", "abc"],
+    ["--max-tokens", "-5"],
+    ["--price", "-3"],
+    ["--top", "-1"],
+    ["--fail-on-waste", "abc"],
+    ["--fail-on-waste", "-1"],
+  ];
+
+  for (const args of invalid) {
+    const result = spawnSync(process.execPath, [bin, repo, ...args], { encoding: "utf8" });
+    assert.equal(result.status, 2, `${args.join(" ")} should fail with exit 2\n${result.stderr}`);
+    assert.match(result.stderr, /ctxtrim: invalid --/);
+  }
 });

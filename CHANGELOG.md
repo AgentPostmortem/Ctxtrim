@@ -3,6 +3,13 @@
 All notable changes to this project are documented here, following
 [Keep a Changelog](https://keepachangelog.com/) and semantic versioning.
 
+## [0.1.3] - 2026-09-06
+
+### Fixed
+
+- Reject non-finite and negative numeric CLI options instead of scanning with
+  invalid thresholds or silently ignoring invalid waste gates.
+
 ## [0.1.2] - 2026-08-09
 
 ### Fixed
