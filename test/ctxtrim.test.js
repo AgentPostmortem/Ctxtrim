@@ -1,5 +1,4 @@
-import fs, { mkdtempSync, rmSync, truncateSync, writeFileSync } from "node:fs";
-import { existsSync } from "node:fs";
+import fs, { existsSync, mkdtempSync, rmSync, truncateSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { syncBuiltinESMExports } from "node:module";
 import { tmpdir } from "node:os";
@@ -135,6 +134,23 @@ test("clean repo (only source) reports nothing to trim", () => {
   // scanning the src subdir alone = only source
   const s = scanRepo(join(repo, "src"));
   assert.equal(s.totals.trimTokens, 0);
+});
+
+test("CLI rejects non-finite and negative numeric options", () => {
+  const invalid = [
+    ["--max-tokens", "abc"],
+    ["--max-tokens", "-5"],
+    ["--price", "-3"],
+    ["--top", "-1"],
+    ["--fail-on-waste", "abc"],
+    ["--fail-on-waste", "-1"],
+  ];
+
+  for (const args of invalid) {
+    const result = spawnSync(process.execPath, [cli, repo, ...args], { encoding: "utf8" });
+    assert.equal(result.status, 2, `${args.join(" ")} should fail with exit 2\n${result.stderr}`);
+    assert.match(result.stderr, /ctxtrim: invalid --/);
+  }
 });
 
 test("unknown --targets values fail before writing ignore files", (t) => {
