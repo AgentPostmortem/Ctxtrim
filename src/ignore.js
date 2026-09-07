@@ -21,8 +21,14 @@ export function block(patterns) {
 /** Insert or replace the managed block in existing content (keeps the user's own lines). */
 export function merge(existing, patterns) {
   const b = block(patterns);
-  if (existing.includes(START) && existing.includes(END)) {
+  const startIndex = existing.indexOf(START);
+  const endIndex = existing.indexOf(END, startIndex + START.length);
+  if (startIndex !== -1 && endIndex !== -1) {
     return existing.replace(new RegExp(escape(START) + "[\\s\\S]*?" + escape(END)), b).trimEnd() + "\n";
+  }
+  if (startIndex !== -1) {
+    const base = existing.slice(0, startIndex).trim();
+    return (base ? base + "\n\n" : "") + b + "\n";
   }
   const base = existing.trim();
   return (base ? base + "\n\n" : "") + b + "\n";

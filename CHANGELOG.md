@@ -3,6 +3,13 @@
 All notable changes to this project are documented here, following
 [Keep a Changelog](https://keepachangelog.com/) and semantic versioning.
 
+## [0.1.4] - 2026-09-07
+
+### Fixed
+
+- Repair an unclosed managed ignore block in place instead of appending a
+  duplicate block on every run.
+
 ## [0.1.3] - 2026-09-06
 
 ### Fixed

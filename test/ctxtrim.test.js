@@ -130,6 +130,22 @@ test("ignore block is idempotent (managed block replaced, user lines kept)", () 
   assert.ok(!second.includes("package-lock.json"), "old managed pattern should be gone");
 });
 
+test("ignore merge repairs a managed block with no end marker", () => {
+  const existing = [
+    "# my own rule",
+    "*.log",
+    "# >>> ctxtrim (managed) >>>",
+    "old-generated-pattern/",
+  ].join("\n");
+
+  const repaired = merge(existing, ["dist/", "coverage/"]);
+
+  assert.ok(repaired.includes("# my own rule\n*.log"));
+  assert.ok(repaired.includes(block(["dist/", "coverage/"])));
+  assert.ok(!repaired.includes("old-generated-pattern/"));
+  assert.equal((repaired.match(/ctxtrim \(managed\)/g) || []).length, 2);
+});
+
 test("clean repo (only source) reports nothing to trim", () => {
   // scanning the src subdir alone = only source
   const s = scanRepo(join(repo, "src"));
