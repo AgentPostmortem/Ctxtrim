@@ -152,6 +152,30 @@ test("clean repo (only source) reports nothing to trim", () => {
   assert.equal(s.totals.trimTokens, 0);
 });
 
+test("CLI exits 0 on a clean repo with --fail-on-waste 0", () => {
+  const result = spawnSync(process.execPath, [cli, join(repo, "src"), "--fail-on-waste", "0"], {
+    encoding: "utf8",
+  });
+  assert.equal(result.status, 0, `wastePct 0 should not trip threshold 0\n${result.stderr}`);
+});
+
+test("CLI still fails with --fail-on-waste 0 when there is waste", () => {
+  const result = spawnSync(process.execPath, [cli, repo, "--fail-on-waste", "0"], { encoding: "utf8" });
+  assert.equal(result.status, 1, "a dirty repo should still fail threshold 0");
+});
+
+test("CLI fails only when waste reaches the threshold", () => {
+  // the fixture is 100% waste: threshold equal to waste must still fail...
+  const equal = spawnSync(process.execPath, [cli, repo, "--fail-on-waste", "100"], { encoding: "utf8" });
+  assert.equal(equal.status, 1, "waste at the threshold must fail");
+  // ...and a 1% threshold still catches it
+  const low = spawnSync(process.execPath, [cli, repo, "--fail-on-waste", "1"], { encoding: "utf8" });
+  assert.equal(low.status, 1, "1% threshold should fail a repo with waste");
+  // while a clean repo sits well below the threshold
+  const pass = spawnSync(process.execPath, [cli, join(repo, "src"), "--fail-on-waste", "50"], { encoding: "utf8" });
+  assert.equal(pass.status, 0, `clean repo should pass a 50%% threshold\n${pass.stderr}`);
+});
+
 test("CLI rejects non-finite and negative numeric options", () => {
   const invalid = [
     ["--max-tokens", "abc"],
