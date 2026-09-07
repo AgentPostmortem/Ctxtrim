@@ -9,6 +9,7 @@ import { dirname, join } from "node:path";
 import { scanRepo, estimateTokens } from "../src/scan.js";
 import { classify, classifyPath } from "../src/classify.js";
 import { merge, block } from "../src/ignore.js";
+import { textReport } from "../src/report.js";
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "sample-repo");
 const cli = join(dirname(fileURLToPath(import.meta.url)), "..", "bin", "ctxtrim.js");
@@ -184,4 +185,12 @@ test("unknown --targets values fail before writing ignore files", (t) => {
   assert.equal(existsSync(join(root, ".cursorignore")), false);
   assert.equal(existsSync(join(root, ".aiexclude")), false);
   assert.equal(existsSync(join(root, ".aiignore")), false);
+});
+test("textReport with top: 0 omits Top offenders header", () => {
+  const scan = scanRepo(repo);
+  const out = textReport(scan, { price: 3, top: 0 });
+  assert.ok(
+    !out.includes("Top offenders"),
+    "should not show Top offenders header when top is 0",
+  );
 });

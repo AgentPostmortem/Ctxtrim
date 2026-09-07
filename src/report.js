@@ -27,10 +27,12 @@ export function textReport(scan, { price, top, wrote }) {
   const cats = Object.entries(t.byCategory).sort((a, b) => b[1].tokens - a[1].tokens);
   L.push(c("90", "  by category: ") + cats.map(([k, v]) => `${k} ${fmtTokens(v.tokens)}`).join(c("90", " · ")));
   L.push("");
-  L.push(c("1", "  Top offenders"));
-  for (const f of scan.files.filter((f) => f.trim).slice(0, top)) {
-    const tok = ("~" + fmtTokens(f.tokens)).padStart(7);
-    L.push(`  ${c("33", tok)}  ${c("90", usd(dollars(f.tokens, price)).padStart(7))}  ${f.rel}  ${c("90", "— " + f.reason)}`);
+  if (top > 0) {
+    L.push(c("1", "  Top offenders"));
+    for (const f of scan.files.filter((f) => f.trim).slice(0, top)) {
+      const tok = ("~" + fmtTokens(f.tokens)).padStart(7);
+      L.push(`  ${c("33", tok)}  ${c("90", usd(dollars(f.tokens, price)).padStart(7))}  ${f.rel}  ${c("90", "— " + f.reason)}`);
+    }
   }
   L.push("");
   if (wrote && wrote.length) {
