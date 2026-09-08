@@ -3,6 +3,12 @@
 All notable changes to this project are documented here, following
 [Keep a Changelog](https://keepachangelog.com/) and semantic versioning.
 
+## [0.1.6] - 2026-09-08
+
+### Fixed
+
+- Write and report each ignore file only once when `--targets` contains duplicates.
+
 ## [0.1.5] - 2026-09-07
 
 ### Fixed

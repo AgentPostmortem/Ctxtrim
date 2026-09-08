@@ -210,6 +210,23 @@ test("unknown --targets values fail before writing ignore files", (t) => {
   assert.equal(existsSync(join(root, ".aiexclude")), false);
   assert.equal(existsSync(join(root, ".aiignore")), false);
 });
+test("duplicate --targets writes and reports each ignore file once", (t) => {
+  const root = mkdtempSync(join(tmpdir(), "ctxtrim-duplicate-target-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  writeFileSync(join(root, "package-lock.json"), "{}\n");
+
+  const result = spawnSync(process.execPath, [
+    cli, root, "--write", "--format", "json", "--targets", "cursor, gemini,cursor,gemini",
+  ], { encoding: "utf8" });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(result.stdout).wrote, [
+    { file: ".cursorignore", action: "created", patterns: 1 },
+    { file: ".aiexclude", action: "created", patterns: 1 },
+  ]);
+  assert.equal(existsSync(join(root, ".cursorignore")), true);
+  assert.equal(existsSync(join(root, ".aiexclude")), true);
+});
 test("textReport with top: 0 omits Top offenders header", () => {
   const scan = scanRepo(repo);
   const out = textReport(scan, { price: 3, top: 0 });
