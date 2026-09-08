@@ -37,7 +37,7 @@ export function merge(existing, patterns) {
 /** @returns {{file, action:'created'|'updated', patterns:number}[]} */
 export function writeIgnores(root, patterns, targets) {
   const results = [];
-  for (const t of targets) {
+  for (const t of new Set(targets)) {
     const fname = TARGETS[t];
     if (!fname) continue;
     const path = join(root, fname);

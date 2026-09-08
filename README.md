@@ -63,6 +63,8 @@ npx ctxtrim --fail-on-waste 40    # CI: exit 1 if 40%+ of context is junk
 
 **Ignore files it writes** (all real formats the tools honor): `.cursorignore` (Cursor), `.aiexclude` (Gemini Code Assist / Firebase Studio), `.aiignore` (generic). Writes are **idempotent** — a managed block between markers, so your own rules are preserved and re-runs just update the block.
 
+Repeated names in `--targets` are ignored; each ignore file is written and reported once, in the order first requested.
+
 ## What it is (and isn't)
 
 - A **fast, deterministic, zero-dependency** heuristic — no model calls, nothing uploaded.
