@@ -3,6 +3,13 @@
 All notable changes to this project are documented here, following
 [Keep a Changelog](https://keepachangelog.com/) and semantic versioning.
 
+## [0.1.5] - 2026-09-07
+
+### Fixed
+
+- `--fail-on-waste 0` no longer fails every build: a 0% waste (clean) repo now
+  passes, while any actual waste still trips the threshold.
+
 ## [0.1.4] - 2026-09-07
 
 ### Fixed

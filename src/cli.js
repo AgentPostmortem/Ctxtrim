@@ -87,6 +87,8 @@ export function run(argv, { version }) {
   if (o.format === "json") process.stdout.write(jsonReport(scan, { price: o.price, wrote }) + "\n");
   else process.stdout.write(textReport(scan, { price: o.price, top: o.top, wrote }));
 
-  if (o.failOnWaste != null && scan.totals.wastePct >= o.failOnWaste) return 1;
+  // wastePct >= 0 is always true, so a 0-waste (clean) repo would never pass
+  // --fail-on-waste 0; require actual waste to trip the threshold.
+  if (o.failOnWaste != null && scan.totals.wastePct >= o.failOnWaste && scan.totals.wastePct > 0) return 1;
   return 0;
 }
