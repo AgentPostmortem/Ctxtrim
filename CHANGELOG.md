@@ -3,6 +3,12 @@
 All notable changes to this project are documented here, following
 [Keep a Changelog](https://keepachangelog.com/) and semantic versioning.
 
+## [0.1.7] - 2026-09-11
+
+### Fixed
+
+- Reject multiple positional paths with exit code 2 before scanning or writing ignore files.
+
 ## [0.1.6] - 2026-09-08
 
 ### Fixed

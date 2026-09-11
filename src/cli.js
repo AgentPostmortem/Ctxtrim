@@ -47,7 +47,10 @@ function parse(argv) {
     else if (has("--top")) o.top = Number(val());
     else if (has("--format")) o.format = val();
     else if (has("--fail-on-waste")) o.failOnWaste = Number(val());
-    else if (!a.startsWith("-")) o.path = a;
+    else if (!a.startsWith("-")) {
+      if (o.path !== null) return { ...o, error: "ctxtrim: only one path may be supplied\n" };
+      o.path = a;
+    }
   }
   return o;
 }
@@ -66,6 +69,7 @@ function numericOptionError(o) {
 
 export function run(argv, { version }) {
   const o = parse(argv);
+  if (o.error) { process.stderr.write(o.error); return 2; }
   if (o.help) { process.stdout.write(HELP); return 0; }
   if (o.version) { process.stdout.write(version + "\n"); return 0; }
   const target = o.path || ".";
