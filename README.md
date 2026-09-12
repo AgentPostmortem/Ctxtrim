@@ -51,8 +51,9 @@ npx ctxtrim --format json         # machine-readable
 npx ctxtrim --fail-on-waste 40    # CI: exit 1 if 40%+ of context is junk
 ```
 
-At most one path may be supplied; omitting it uses the current directory. Extra paths
-are a usage error (exit code 2), detected before scanning or writing files.
+At most one path may be supplied; omitting it uses the current directory. The path
+must be an existing directory. File paths, missing paths, and extra paths are usage
+errors (exit code 2), detected before scanning or writing files.
 
 | Flag | Default | Meaning |
 | --- | --- | --- |

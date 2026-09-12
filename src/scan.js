@@ -1,5 +1,5 @@
 // Walk a repo, estimate each file's token cost, classify it, and aggregate.
-import { readdirSync, readFileSync, statSync, openSync, readSync, closeSync, existsSync } from "node:fs";
+import { readdirSync, readFileSync, statSync, openSync, readSync, closeSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { classify, classifyPath, ignorePattern } from "./classify.js";
 
@@ -35,7 +35,8 @@ function fileInfo(abs, size) {
  */
 export function scanRepo(target, opts = {}) {
   const maxTokens = opts.maxTokens ?? 2000;
-  const root = existsSync(target) && statSync(target).isDirectory() ? target : ".";
+  if (!statSync(target).isDirectory()) throw new Error(`not a directory: ${target}`);
+  const root = target;
   const files = [];
 
   const walk = (dir) => {
