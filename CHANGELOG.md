@@ -5,6 +5,10 @@ All notable changes to this project are documented here, following
 
 ## [0.1.8] - 2026-09-12
 
+### Added
+
+- Test coverage for scanning an empty directory (zero files, 0% waste).
+
 ### Fixed
 
 - Reject file and missing scan targets instead of silently scanning the current directory.
