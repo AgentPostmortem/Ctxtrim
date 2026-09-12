@@ -9,6 +9,11 @@ All notable changes to this project are documented here, following
 
 - Test coverage for scanning an empty directory (zero files, 0% waste).
 
+### Fixed
+
+- Reject file and missing scan targets instead of silently scanning the current directory.
+  The CLI exits with code 2 before reporting or writing ignore files for an invalid target.
+
 ## [0.1.7] - 2026-09-11
 
 ### Fixed
