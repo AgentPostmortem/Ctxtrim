@@ -3,6 +3,13 @@
 All notable changes to this project are documented here, following
 [Keep a Changelog](https://keepachangelog.com/) and semantic versioning.
 
+## [0.1.8] - 2026-09-12
+
+### Fixed
+
+- Reject file and missing scan targets instead of silently scanning the current directory.
+  The CLI exits with code 2 before reporting or writing ignore files for an invalid target.
+
 ## [0.1.7] - 2026-09-11
 
 ### Fixed
