@@ -147,6 +147,14 @@ test("ignore merge repairs a managed block with no end marker", () => {
   assert.equal((repaired.match(/ctxtrim \(managed\)/g) || []).length, 2);
 });
 
+test("ignore merge repairs an orphan end marker", () => {
+  const existing = "# my own rule\n# <<< ctxtrim (managed) <<<\n";
+  const repaired = merge(existing, ["dist/"]);
+  assert.equal((repaired.match(/ctxtrim \(managed\)/g) || []).length, 2);
+  assert.ok(repaired.includes("# my own rule"));
+  assert.ok(repaired.includes(block(["dist/"])));
+});
+
 test("clean repo (only source) reports nothing to trim", () => {
   // scanning the src subdir alone = only source
   const s = scanRepo(join(repo, "src"));

@@ -30,6 +30,10 @@ export function merge(existing, patterns) {
     const base = existing.slice(0, startIndex).trim();
     return (base ? base + "\n\n" : "") + b + "\n";
   }
+  if (endIndex !== -1) {
+    const base = (existing.slice(0, endIndex) + existing.slice(endIndex + END.length)).trim();
+    return (base ? base + "\n\n" : "") + b + "\n";
+  }
   const base = existing.trim();
   return (base ? base + "\n\n" : "") + b + "\n";
 }
