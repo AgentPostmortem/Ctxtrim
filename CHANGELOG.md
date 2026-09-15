@@ -3,6 +3,12 @@
 All notable changes to this project are documented here, following
 [Keep a Changelog](https://keepachangelog.com/) and semantic versioning.
 
+## [0.1.10] - 2026-09-15
+
+### Fixed
+
+- Include symlinked files that resolve to regular files in scan results instead of silently omitting them.
+
 ## [0.1.9] - 2026-09-12
 
 ### Fixed

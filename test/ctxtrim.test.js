@@ -1,4 +1,4 @@
-import fs, { existsSync, mkdtempSync, rmSync, truncateSync, writeFileSync } from "node:fs";
+import fs, { existsSync, mkdtempSync, rmSync, symlinkSync, truncateSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { syncBuiltinESMExports } from "node:module";
 import { tmpdir } from "node:os";
@@ -99,6 +99,16 @@ test("scan skips binary reads and retains content-dependent classification", (t)
   }
   assert.equal(result.files.find((file) => file.rel === "generated.js").category, "generated");
   assert.equal(result.files.find((file) => file.rel === "large.json").category, "data");
+});
+
+test("scan includes symlinked source files", (t) => {
+  const root = mkdtempSync(join(tmpdir(), "ctxtrim-symlink-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  writeFileSync(join(root, "real.py"), "print(\"hello\")\n");
+  symlinkSync("real.py", join(root, "linked.py"));
+
+  const result = scanRepo(root);
+  assert.deepEqual(result.files.map((file) => file.rel).sort(), ["linked.py", "real.py"]);
 });
 
 test("scan finds trimmable bloat and keeps source", () => {

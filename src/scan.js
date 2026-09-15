@@ -45,11 +45,14 @@ export function scanRepo(target, opts = {}) {
     for (const e of entries) {
       if (ALWAYS_SKIP.has(e.name)) continue;
       const abs = join(dir, e.name);
-      if (e.isSymbolicLink()) continue;
       if (e.isDirectory()) { walk(abs); continue; }
-      if (!e.isFile()) continue;
+      if (!e.isFile() && !e.isSymbolicLink()) continue;
       let size = 0;
-      try { size = statSync(abs).size; } catch { continue; }
+      try {
+        const stat = statSync(abs);
+        if (!stat.isFile()) continue;
+        size = stat.size;
+      } catch { continue; }
       const rel = relative(root, abs).split(sep).join("/");
       const pathClassification = classifyPath(rel);
       const info = pathClassification?.binary ? { tokens: 0, sample: "" } : fileInfo(abs, size);
