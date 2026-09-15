@@ -17,6 +17,7 @@ const LOCKFILES = new Set([
   "package-lock.json", "yarn.lock", "pnpm-lock.yaml", "npm-shrinkwrap.json",
   "cargo.lock", "poetry.lock", "gemfile.lock", "composer.lock", "go.sum",
   "pubspec.lock", "podfile.lock", "packages.lock.json", "flake.lock", "uv.lock",
+  "pipfile.lock", "bun.lockb", "bun.lock", "deno.lock", "pixi.lock",
 ]);
 
 const DATA_EXT = new Set([

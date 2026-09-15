@@ -21,6 +21,10 @@ test("token estimate is ~chars/4", () => {
 
 test("classify buckets files correctly", () => {
   assert.equal(classify("package-lock.json", {}).category, "lockfile");
+  for (const name of ["Pipfile.lock", "bun.lockb", "bun.lock", "deno.lock", "pixi.lock"]) {
+    assert.equal(classify(name, {}).category, "lockfile");
+    assert.equal(classify(name, {}).trim, true);
+  }
   assert.equal(classify("node_modules/x/index.js", {}).category, "vendored");
   assert.equal(classify("dist/app.js", {}).category, "build");
   assert.equal(classify("app.min.js", {}).category, "minified");
