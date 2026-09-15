@@ -21,7 +21,7 @@ const LOCKFILES = new Set([
 
 const DATA_EXT = new Set([
   ".csv", ".tsv", ".parquet", ".ndjson", ".jsonl", ".sqlite", ".sqlite3",
-  ".db", ".dump", ".pkl", ".npy", ".npz", ".arrow", ".feather", ".geojson",
+  ".db", ".dump", ".log", ".pkl", ".npy", ".npz", ".arrow", ".feather", ".geojson",
 ]);
 
 const BINARY_EXT = new Set([
