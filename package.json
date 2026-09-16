@@ -1,6 +1,10 @@
 {
   "name": "ctxtrim",
+<<<<<<< HEAD
   "version": "0.1.12",
+=======
+  "version": "0.1.11",
+>>>>>>> origin/main
   "description": "Trim what bloats your AI coding context. Scan a repo, find the high-cost/low-value files ballooning your Claude Code / Cursor / Codex context, and write ignore files to cut token cost. Zero dependencies.",
   "type": "module",
   "bin": {

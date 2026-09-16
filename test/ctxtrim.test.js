@@ -29,6 +29,8 @@ test("classify buckets files correctly", () => {
   assert.equal(classify("dist/app.js", {}).category, "build");
   assert.equal(classify("app.min.js", {}).category, "minified");
   assert.equal(classify("data/x.csv", {}).category, "data");
+  assert.equal(classify("debug.log", {}).category, "data");
+  assert.equal(classify("debug.log", {}).trim, true);
   assert.equal(classify("logo.png", {}).binary, true);
   assert.equal(classify("src/index.js", { tokens: 50 }).category, "source");
   assert.equal(classify("src/index.js", { tokens: 50 }).trim, false);
