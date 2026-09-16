@@ -3,6 +3,12 @@
 All notable changes to this project are documented here, following
 [Keep a Changelog](https://keepachangelog.com/) and semantic versioning.
 
+## [0.1.12] - 2026-09-16
+
+### Fixed
+
+- Classify common Python, Bun, Deno, and Pixi lockfiles as trimmable lockfiles.
+
 ## [0.1.11] - 2026-09-16
 
 ### Fixed
