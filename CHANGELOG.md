@@ -3,11 +3,17 @@
 All notable changes to this project are documented here, following
 [Keep a Changelog](https://keepachangelog.com/) and semantic versioning.
 
-## [0.1.10] - 2026-09-15
+## [0.1.11] - 2026-09-16
 
 ### Fixed
 
 - Classify `.log` files as trimmable data instead of source.
+
+## [0.1.10] - 2026-09-15
+
+### Fixed
+
+- Match generated-file markers case-insensitively.
 ## [0.1.9] - 2026-09-12
 
 ### Fixed
