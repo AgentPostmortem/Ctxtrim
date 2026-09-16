@@ -22,12 +22,16 @@ export function block(patterns) {
 export function merge(existing, patterns) {
   const b = block(patterns);
   const startIndex = existing.indexOf(START);
-  const endIndex = existing.indexOf(END, startIndex + START.length);
+  const endIndex = existing.indexOf(END, startIndex === -1 ? 0 : startIndex + START.length);
   if (startIndex !== -1 && endIndex !== -1) {
     return existing.replace(new RegExp(escape(START) + "[\\s\\S]*?" + escape(END)), b).trimEnd() + "\n";
   }
   if (startIndex !== -1) {
     const base = existing.slice(0, startIndex).trim();
+    return (base ? base + "\n\n" : "") + b + "\n";
+  }
+  if (endIndex !== -1) {
+    const base = (existing.slice(0, endIndex) + existing.slice(endIndex + END.length)).trim();
     return (base ? base + "\n\n" : "") + b + "\n";
   }
   const base = existing.trim();
