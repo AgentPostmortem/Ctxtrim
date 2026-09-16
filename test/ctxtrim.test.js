@@ -122,6 +122,37 @@ test("scan includes symlinked source files", (t) => {
   assert.deepEqual(result.files.map((file) => file.rel).sort(), ["linked.py", "real.py"]);
 });
 
+test("scan surfaces unreadable (EACCES) files with estimated tokens, not silent 0", (t) => {
+  const root = mkdtempSync(join(tmpdir(), "ctxtrim-unreadable-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+
+  writeFileSync(join(root, "locked.txt"), "x".repeat(200_000));
+
+  const readFileSync = fs.readFileSync;
+  t.mock.method(fs, "readFileSync", (abs) => {
+    if (String(abs).endsWith("locked.txt")) {
+      const err = new Error("EACCES: permission denied");
+      err.code = "EACCES";
+      throw err;
+    }
+    return readFileSync(abs);
+  });
+  syncBuiltinESMExports();
+
+  let result;
+  try {
+    result = scanRepo(root);
+  } finally {
+    t.mock.restoreAll();
+    syncBuiltinESMExports();
+  }
+
+  const file = result.files.find((f) => f.rel === "locked.txt");
+  assert.ok(file, "unreadable file should be present in the scan");
+  assert.ok(file.tokens > 0, `unreadable file silently reported as 0 tokens, got ${file.tokens}`);
+  assert.ok(result.totals.totalTokens >= file.tokens, "unreadable file should count toward totals");
+});
+
 test("scan finds trimmable bloat and keeps source", () => {
   const s = scanRepo(repo);
   assert.ok(s.totals.trimTokens > 0);

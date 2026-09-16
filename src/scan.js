@@ -22,7 +22,10 @@ function fileInfo(abs, size) {
       closeSync(fd);
       text = buf.toString("utf8", 0, bytesRead);
     }
-  } catch { return { tokens: 0, sample: "" }; }
+  } catch {
+    // Unreadable (e.g. EACCES): don't silently drop it — surface an estimate from the known size.
+    return { tokens: Math.ceil((size || 0) / 4), sample: "" };
+  }
   let tokens = estimateTokens(text);
   if (bytesRead && bytesRead < size) tokens = Math.round(tokens * (size / bytesRead)); // scale partial reads
   return { tokens, sample: text.slice(0, 4000) };
