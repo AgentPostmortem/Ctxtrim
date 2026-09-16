@@ -1,4 +1,9 @@
-## [0.1.10] - 2026-09-15
+# Changelog
+
+All notable changes to this project are documented here, following
+[Keep a Changelog](https://keepachangelog.com/) and semantic versioning.
+
+## [0.1.11] - 2026-09-16
 
 ### Fixed
 
