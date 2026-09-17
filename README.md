@@ -67,6 +67,8 @@ ctxtrim  ·  my-repo  ·  412 files
 
 Estimates use the widely-cited ~4-chars-per-token rule (great for ranking and relative savings; pass `--price` to match your model).
 
+Vendored dependency and build output directories (`node_modules`, `dist`, `build`, ...) are reported as a single entry keyed by directory name — sized from a cheap stat walk without reading the files inside. Directory-level categories are decided by the directory name, not by reading its contents.
+
 ## Usage
 
 ```bash

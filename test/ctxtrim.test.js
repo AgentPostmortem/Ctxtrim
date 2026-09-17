@@ -1,11 +1,11 @@
-import fs, { existsSync, mkdtempSync, rmSync, symlinkSync, truncateSync, writeFileSync } from "node:fs";
+import fs, { existsSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, truncateSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { syncBuiltinESMExports } from "node:module";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { dirname, join, sep } from "node:path";
 import { scanRepo, estimateTokens } from "../src/scan.js";
 import { classify, classifyPath } from "../src/classify.js";
 import { merge, block } from "../src/ignore.js";
@@ -122,15 +122,64 @@ test("scan includes symlinked source files", (t) => {
   assert.deepEqual(result.files.map((file) => file.rel).sort(), ["linked.py", "real.py"]);
 });
 
+test("scan does not read files inside vendored or build directories", (t) => {
+  const root = mkdtempSync(join(tmpdir(), "ctxtrim-vendored-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+
+  // node_modules with a big file that would be read WITHOUT this fix.
+  const npm = join(root, "node_modules", "dep");
+  mkdirSync(join(npm), { recursive: true });
+  writeFileSync(join(npm, "index.js"), "x".repeat(200_000));
+  // dist with a big bundle.
+  const dist = join(root, "dist");
+  mkdirSync(dist, { recursive: true });
+  writeFileSync(join(dist, "bundle.js"), "y".repeat(200_000));
+  writeFileSync(join(root, "src.js"), "export const n = 1;\n");
+
+  const readFiles = [];
+  const readFileSync = fs.readFileSync;
+  t.mock.method(fs, "readFileSync", (...args) => {
+    readFiles.push(String(args[0]));
+    if (String(args[0]).includes("node_modules") || String(args[0]).includes(sep + "dist")) {
+      const err = new Error(`should never read vendored/build file: ${args[0]}`);
+      err.code = "EACCES";
+      throw err;
+    }
+    return readFileSync(...args);
+  });
+  syncBuiltinESMExports();
+
+  let result;
+  try {
+    result = scanRepo(root);
+  } finally {
+    t.mock.restoreAll();
+    syncBuiltinESMExports();
+  }
+
+  assert.ok(
+    !readFiles.some((p) => p.includes("node_modules")),
+    "no file inside node_modules should be read",
+  );
+  assert.ok(!readFiles.some((p) => p.includes(sep + "dist")), "no file inside dist should be read");
+
+  // The vendored dir still reports under its collapse pattern, and the totals still include it.
+  assert.ok(result.patterns.includes("node_modules/"));
+  assert.ok(result.patterns.includes("dist/"));
+  assert.equal(result.totals.byCategory.vendored.tokens, 200_000 / 4);
+  assert.equal(result.totals.byCategory.build.tokens, 200_000 / 4);
+  assert.equal(result.files.find((f) => f.rel === "src.js").category, "source");
+});
+
 test("scan finds trimmable bloat and keeps source", () => {
   const s = scanRepo(repo);
   assert.ok(s.totals.trimTokens > 0);
   assert.ok(s.totals.wastePct > 50, `expected mostly-junk fixture, got ${s.totals.wastePct}%`);
-  // the three bloat files are flagged
+  // the three bloat files are flagged (dist/bundle.js collapses to the dist dir)
   const trimmed = new Set(s.files.filter((f) => f.trim).map((f) => f.rel));
   assert.ok(trimmed.has("package-lock.json"));
   assert.ok(trimmed.has("data/seed.json"));
-  assert.ok([...trimmed].some((p) => p.startsWith("dist/")));
+  assert.ok(trimmed.has("dist"), "build dir recorded once by name");
   // real source is NOT trimmed
   const src = s.files.find((f) => f.rel === "src/index.js");
   assert.equal(src.trim, false);
