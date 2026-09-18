@@ -9,6 +9,13 @@ All notable changes to this project are documented here, following
 
 - Treat vendored (`node_modules`, `vendor`, ...) and build output (`dist`, `build`, ...) directories as single trim candidates: record the directory once by name and never read or descend into it. Reported patterns and category totals are unchanged.
 
+## [0.1.15] - 2026-09-17
+
+### Fixed
+
+- Surface unreadable files (e.g. EACCES / mode-000) as estimated tokens from their
+  known size instead of reporting them as clean 0-token sources.
+
 ## [0.1.14] - 2026-09-16
 
 ### Fixed
