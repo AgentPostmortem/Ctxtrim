@@ -1,13 +1,36 @@
 // Walk a repo, estimate each file's token cost, classify it, and aggregate.
 import { readdirSync, readFileSync, statSync, openSync, readSync, closeSync } from "node:fs";
 import { join, relative, sep } from "node:path";
-import { classify, classifyPath, ignorePattern } from "./classify.js";
+import { classify, classifyPath, ignorePattern, VENDOR_DIRS, BUILD_DIRS } from "./classify.js";
 
 const ALWAYS_SKIP = new Set([".git"]);
+// Directory names that are vendored or build output: record once, never descend.
+const VENDOR_SKIP = new Set(VENDOR_DIRS.map((d) => d.toLowerCase()));
+const BUILD_SKIP = new Set(BUILD_DIRS.map((d) => d.toLowerCase()));
 const MAX_READ = 5_000_000; // bytes fully read; larger files are estimated from size
 
 /** ~4 chars per token is the widely-cited rule of thumb; good enough to rank files. */
 export const estimateTokens = (text) => Math.ceil(text.length / 4);
+
+/** Cheap total token estimate for a directory: sum sibling sizes without reading contents. */
+function dirTokenEstimate(abs) {
+  let bytes = 0;
+  const stack = [abs];
+  while (stack.length) {
+    const dir = stack.pop();
+    let entries;
+    try { entries = readdirSync(dir, { withFileTypes: true }); } catch { continue; }
+    for (const e of entries) {
+      if (e.isSymbolicLink()) continue;
+      const child = join(dir, e.name);
+      try {
+        if (e.isDirectory()) stack.push(child);
+        else if (e.isFile()) bytes += statSync(child).size;
+      } catch { /* skip unreadable entries */ }
+    }
+  }
+  return Math.ceil(bytes / 4);
+}
 
 function fileInfo(abs, size) {
   // Read up to MAX_READ bytes for both token estimate and the generated-marker sample.
@@ -48,7 +71,23 @@ export function scanRepo(target, opts = {}) {
     for (const e of entries) {
       if (ALWAYS_SKIP.has(e.name)) continue;
       const abs = join(dir, e.name);
-      if (e.isDirectory()) { walk(abs); continue; }
+      if (e.isDirectory()) {
+        const lower = e.name.toLowerCase();
+        if (VENDOR_SKIP.has(lower) || BUILD_SKIP.has(lower)) {
+          // Record the directory once by name; do not descend or read contents.
+          const rel = relative(root, abs).split(sep).join("/");
+          const reason = VENDOR_SKIP.has(lower)
+            ? "vendored dependency directory"
+            : "build / generated output directory";
+          files.push({
+            rel, size: 0, tokens: dirTokenEstimate(abs),
+            category: VENDOR_SKIP.has(lower) ? "vendored" : "build",
+            trim: true, binary: false, reason,
+          });
+          continue;
+        }
+        walk(abs); continue;
+      }
       if (!e.isFile() && !e.isSymbolicLink()) continue;
       let size = 0;
       try {

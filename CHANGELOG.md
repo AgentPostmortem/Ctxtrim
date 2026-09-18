@@ -3,6 +3,12 @@
 All notable changes to this project are documented here, following
 [Keep a Changelog](https://keepachangelog.com/) and semantic versioning.
 
+## [0.1.16] - 2026-09-17
+
+### Fixed
+
+- Treat vendored (`node_modules`, `vendor`, ...) and build output (`dist`, `build`, ...) directories as single trim candidates: record the directory once by name and never read or descend into it. Reported patterns and category totals are unchanged.
+
 ## [0.1.15] - 2026-09-17
 
 ### Fixed
