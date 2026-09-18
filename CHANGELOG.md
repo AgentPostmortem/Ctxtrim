@@ -3,6 +3,13 @@
 All notable changes to this project are documented here, following
 [Keep a Changelog](https://keepachangelog.com/) and semantic versioning.
 
+## [0.1.15] - 2026-09-17
+
+### Fixed
+
+- Surface unreadable files (e.g. EACCES / mode-000) as estimated tokens from their
+  known size instead of reporting them as clean 0-token sources.
+
 ## [0.1.14] - 2026-09-16
 
 ### Fixed
