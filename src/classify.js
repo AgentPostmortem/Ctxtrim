@@ -27,6 +27,7 @@ const DATA_EXT = new Set([
 
 const BINARY_EXT = new Set([
   ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".bmp", ".tiff",
+  ".avif", ".heic", ".heif", ".apng", ".webm", ".ogg", ".flac", ".m4a",
   ".pdf", ".zip", ".gz", ".tar", ".tgz", ".7z", ".rar", ".jar", ".war",
   ".woff", ".woff2", ".ttf", ".otf", ".eot", ".mp3", ".mp4", ".mov", ".avi",
   ".wasm", ".so", ".dylib", ".dll", ".exe", ".bin", ".class", ".pyc",
