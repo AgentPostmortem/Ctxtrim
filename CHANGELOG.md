@@ -9,6 +9,12 @@ All notable changes to this project are documented here, following
 
 - Classify loose `.snap` files as generated trim candidates, alongside existing snapshot-directory handling.
 
+## [0.1.18] - 2026-09-23
+
+### Fixed
+
+- Report ignore-file write failures with a concise error and exit code 2 instead of an uncaught stack trace.
+
 ## [0.1.16] - 2026-09-17
 
 ### Fixed

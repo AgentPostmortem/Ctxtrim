@@ -89,7 +89,9 @@ export function run(argv, { version }) {
   try { scan = scanRepo(target, { maxTokens: o.maxTokens }); }
   catch (error) { process.stderr.write(`ctxtrim: ${error.message}\n`); return 2; }
   let wrote = null;
-  if (o.write && scan.patterns.length) wrote = writeIgnores(scan.root, scan.patterns, targets);
+  try {
+    if (o.write && scan.patterns.length) wrote = writeIgnores(scan.root, scan.patterns, targets);
+  } catch (error) { process.stderr.write(`ctxtrim: ${error.message}\n`); return 2; }
 
   if (o.format === "json") process.stdout.write(jsonReport(scan, { price: o.price, wrote }) + "\n");
   else process.stdout.write(textReport(scan, { price: o.price, top: o.top, wrote }));
