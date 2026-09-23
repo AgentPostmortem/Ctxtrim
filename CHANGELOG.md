@@ -3,6 +3,11 @@
 All notable changes to this project are documented here, following
 [Keep a Changelog](https://keepachangelog.com/) and semantic versioning.
 
+## [0.1.20] - 2026-09-23
+
+### Fixed
+
+- Classify `.ipynb` notebooks as data trim candidates, including notebooks below the large-data threshold.
 ## [0.1.19] - 2026-09-23
 
 ### Fixed

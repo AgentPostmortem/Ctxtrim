@@ -67,7 +67,11 @@ ctxtrim  ·  my-repo  ·  412 files
 
 Known binary media, including AVIF, HEIC/HEIF, APNG, WebM, Ogg, FLAC and M4A, are not read as text and contribute no text tokens. They remain explicit ignore candidates.
 
+<<<<<<< HEAD
+Jupyter notebooks (`.ipynb`) are treated as data and suggested for trimming regardless of size. This excludes the whole notebook, including its source cells, not only its outputs; review these suggestions before using `--write`.
+=======
 Loose `.snap` files are treated as generated output and suggested for trimming, just like files inside `__snapshots__/` directories.
+>>>>>>> origin/main
 
 Estimates use the widely-cited ~4-chars-per-token rule (great for ranking and relative savings; pass `--price` to match your model).
 
