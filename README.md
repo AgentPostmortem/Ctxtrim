@@ -97,6 +97,8 @@ errors (exit code 2), detected before scanning or writing files.
 
 **Ignore files it writes** (all real formats the tools honor): `.cursorignore` (Cursor), `.aiexclude` (Gemini Code Assist / Firebase Studio), `.aiignore` (generic). Writes are **idempotent** — a managed block between markers, so your own rules are preserved and re-runs just update the block.
 
+If an ignore file cannot be read or written, the command prints a concise error and exits with code 2 without reporting success. Targets written before a later failure remain updated; writes are not rolled back.
+
 Repeated names in `--targets` are ignored; each ignore file is written and reported once, in the order first requested.
 
 ## What it is (and isn't)
