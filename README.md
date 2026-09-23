@@ -65,6 +65,8 @@ ctxtrim  ·  my-repo  ·  412 files
   ✓ .cursorignore (created, 34 patterns), .aiexclude (created, 34 patterns)
 ```
 
+Jupyter notebooks (`.ipynb`) are treated as data and suggested for trimming regardless of size. This excludes the whole notebook, including its source cells, not only its outputs; review these suggestions before using `--write`.
+
 Estimates use the widely-cited ~4-chars-per-token rule (great for ranking and relative savings; pass `--price` to match your model).
 
 Vendored dependency and build output directories (`node_modules`, `dist`, `build`, ...) are reported as a single entry keyed by directory name — sized from a cheap stat walk without reading the files inside. Directory-level categories are decided by the directory name, not by reading its contents.
