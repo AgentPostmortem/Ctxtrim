@@ -52,6 +52,7 @@ export function classifyPath(rel) {
   if (parts.some((p) => VENDOR_DIRS.includes(p))) return { category: "vendored", trim: true, binary: false, reason: "vendored dependency directory" };
   if (parts.some((p) => BUILD_DIRS.includes(p))) return { category: "build", trim: true, binary: false, reason: "build / generated output directory" };
   if (LOCKFILES.has(name)) return { category: "lockfile", trim: true, binary: false, reason: "dependency lockfile" };
+  if (ext === ".snap") return { category: "generated", trim: true, binary: false, reason: "generated snapshot" };
   if (MINIFIED.test(name)) return { category: "minified", trim: true, binary: false, reason: "minified / bundled / sourcemap" };
   if (DATA_EXT.has(ext)) return { category: "data", trim: true, binary: false, reason: "data file" };
   return null;
