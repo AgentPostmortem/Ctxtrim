@@ -3,12 +3,11 @@
 All notable changes to this project are documented here, following
 [Keep a Changelog](https://keepachangelog.com/) and semantic versioning.
 
-## [0.1.17] - 2026-09-23
+## [0.1.19] - 2026-09-23
 
 ### Fixed
 
 - Classify loose `.snap` files as generated trim candidates, alongside existing snapshot-directory handling.
-- Repair unresolved merge markers in the package lockfile while updating release metadata.
 
 ## [0.1.16] - 2026-09-17
 

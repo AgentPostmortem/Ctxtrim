@@ -65,6 +65,8 @@ ctxtrim  ·  my-repo  ·  412 files
   ✓ .cursorignore (created, 34 patterns), .aiexclude (created, 34 patterns)
 ```
 
+Known binary media, including AVIF, HEIC/HEIF, APNG, WebM, Ogg, FLAC and M4A, are not read as text and contribute no text tokens. They remain explicit ignore candidates.
+
 Loose `.snap` files are treated as generated output and suggested for trimming, just like files inside `__snapshots__/` directories.
 
 Estimates use the widely-cited ~4-chars-per-token rule (great for ranking and relative savings; pass `--price` to match your model).
