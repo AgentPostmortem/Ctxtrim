@@ -112,14 +112,14 @@ test("scan skips binary reads and retains content-dependent classification", (t)
   assert.equal(result.files.find((file) => file.rel === "large.json").category, "data");
 });
 
-test("scan includes symlinked source files", (t) => {
+test("scan counts symlinked source files once at their real path", (t) => {
   const root = mkdtempSync(join(tmpdir(), "ctxtrim-symlink-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   writeFileSync(join(root, "real.py"), "print(\"hello\")\n");
   symlinkSync("real.py", join(root, "linked.py"));
 
   const result = scanRepo(root);
-  assert.deepEqual(result.files.map((file) => file.rel).sort(), ["linked.py", "real.py"]);
+  assert.deepEqual(result.files.map((file) => file.rel), ["real.py"]);
 });
 
 test("scan does not read files inside vendored or build directories", (t) => {

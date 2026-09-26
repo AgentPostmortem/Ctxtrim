@@ -1,6 +1,6 @@
 // Walk a repo, estimate each file's token cost, classify it, and aggregate.
-import { readdirSync, readFileSync, statSync, openSync, readSync, closeSync } from "node:fs";
-import { join, relative, sep } from "node:path";
+import { readdirSync, readFileSync, realpathSync, statSync, openSync, readSync, closeSync } from "node:fs";
+import { isAbsolute, join, relative, sep } from "node:path";
 import { classify, classifyPath, ignorePattern, VENDOR_DIRS, BUILD_DIRS } from "./classify.js";
 
 const ALWAYS_SKIP = new Set([".git"]);
@@ -13,7 +13,7 @@ const MAX_READ = 5_000_000; // bytes fully read; larger files are estimated from
 export const estimateTokens = (text) => Math.ceil(text.length / 4);
 
 /** Cheap total token estimate for a directory: sum sibling sizes without reading contents. */
-function dirTokenEstimate(abs) {
+function dirTokenEstimate(abs, inspectSymlink) {
   let bytes = 0;
   const stack = [abs];
   while (stack.length) {
@@ -21,8 +21,8 @@ function dirTokenEstimate(abs) {
     let entries;
     try { entries = readdirSync(dir, { withFileTypes: true }); } catch { continue; }
     for (const e of entries) {
-      if (e.isSymbolicLink()) continue;
       const child = join(dir, e.name);
+      if (e.isSymbolicLink()) { inspectSymlink(child); continue; }
       try {
         if (e.isDirectory()) stack.push(child);
         else if (e.isFile()) bytes += statSync(child).size;
@@ -57,13 +57,31 @@ function fileInfo(abs, size) {
 /**
  * @param {string} target repo root (or a subdir)
  * @param {{maxTokens?:number}} opts
- * @returns {{root, files, totals}}
+ * @returns {{root, files, totals, warnings}}
  */
 export function scanRepo(target, opts = {}) {
   const maxTokens = opts.maxTokens ?? 2000;
   if (!statSync(target).isDirectory()) throw new Error(`not a directory: ${target}`);
   const root = target;
+  const realRoot = realpathSync(root);
   const files = [];
+  const warnings = [];
+
+  // The ordinary walk counts in-root targets at their real paths (or in a
+  // grouped directory). Never read an alias again or traverse directory links.
+  const inspectSymlink = (abs) => {
+    const path = relative(root, abs).split(sep).join("/");
+    let resolved;
+    try { resolved = realpathSync(abs); }
+    catch (error) {
+      warnings.push({ path, reason: `cannot resolve symlink (${error.code || "unknown error"})` });
+      return;
+    }
+    const rel = relative(realRoot, resolved);
+    if (rel === ".." || rel.startsWith(`..${sep}`) || isAbsolute(rel)) {
+      warnings.push({ path, reason: "symlink target is outside the scan root" });
+    }
+  };
 
   const walk = (dir) => {
     let entries;
@@ -71,6 +89,7 @@ export function scanRepo(target, opts = {}) {
     for (const e of entries) {
       if (ALWAYS_SKIP.has(e.name)) continue;
       const abs = join(dir, e.name);
+      if (e.isSymbolicLink()) { inspectSymlink(abs); continue; }
       if (e.isDirectory()) {
         const lower = e.name.toLowerCase();
         if (VENDOR_SKIP.has(lower) || BUILD_SKIP.has(lower)) {
@@ -80,7 +99,7 @@ export function scanRepo(target, opts = {}) {
             ? "vendored dependency directory"
             : "build / generated output directory";
           files.push({
-            rel, size: 0, tokens: dirTokenEstimate(abs),
+            rel, size: 0, tokens: dirTokenEstimate(abs, inspectSymlink),
             category: VENDOR_SKIP.has(lower) ? "vendored" : "build",
             trim: true, binary: false, reason,
           });
@@ -88,7 +107,7 @@ export function scanRepo(target, opts = {}) {
         }
         walk(abs); continue;
       }
-      if (!e.isFile() && !e.isSymbolicLink()) continue;
+      if (!e.isFile()) continue;
       let size = 0;
       try {
         const stat = statSync(abs);
@@ -115,6 +134,7 @@ export function scanRepo(target, opts = {}) {
     root,
     files,
     patterns,
+    warnings,
     totals: {
       files: files.length,
       textFiles: textFiles.length,

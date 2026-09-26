@@ -3,6 +3,13 @@
 All notable changes to this project are documented here, following
 [Keep a Changelog](https://keepachangelog.com/) and semantic versioning.
 
+## [0.1.21] - 2026-09-26
+
+### Fixed
+
+- Count symlink targets once at their real in-root paths, preserving grouped-directory accounting and `.git` exclusion.
+- Warn about broken, unresolvable and outside-root symlinks in text and JSON reports without reading their contents.
+
 ## [0.1.20] - 2026-09-23
 
 ### Fixed
