@@ -15,6 +15,11 @@ export function textReport(scan, { price, top, wrote }) {
   L.push("");
   L.push(c("1", `ctxtrim`) + c("90", `  ·  ${scan.root}  ·  ${t.files} files`));
   L.push("");
+  if (scan.warnings?.length) {
+    L.push(c("33", "  Warnings"));
+    for (const warning of scan.warnings) L.push(`    ${warning.path} — ${warning.reason}`);
+    L.push("");
+  }
   L.push(`  Full context load: ${c("1", "~" + fmtTokens(t.totalTokens) + " tokens")}  ${c("90", "(~" + usd(dollars(t.totalTokens, price)) + " @ $" + price + "/M input)")}`);
   if (t.trimTokens > 0) {
     L.push(`  Trimmable:         ${c("33", "~" + fmtTokens(t.trimTokens) + " tokens")} ${c("33", "(" + t.wastePct + "%)")}  ${c("32", "→ save ~" + usd(dollars(t.trimTokens, price)) + " per load")}`);
@@ -56,6 +61,7 @@ export function jsonReport(scan, { price, wrote }) {
       estUsdSaved: +dollars(t.trimTokens, price).toFixed(4),
     },
     patterns: scan.patterns,
+    warnings: scan.warnings || [],
     offenders: scan.files.filter((f) => f.trim).map((f) => ({ path: f.rel, tokens: f.tokens, category: f.category, reason: f.reason })),
     wrote: wrote || [],
   }, null, 2);

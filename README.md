@@ -67,15 +67,15 @@ ctxtrim  ·  my-repo  ·  412 files
 
 Known binary media, including AVIF, HEIC/HEIF, APNG, WebM, Ogg, FLAC and M4A, are not read as text and contribute no text tokens. They remain explicit ignore candidates.
 
-<<<<<<< HEAD
 Jupyter notebooks (`.ipynb`) are treated as data and suggested for trimming regardless of size. This excludes the whole notebook, including its source cells, not only its outputs; review these suggestions before using `--write`.
-=======
+
 Loose `.snap` files are treated as generated output and suggested for trimming, just like files inside `__snapshots__/` directories.
->>>>>>> origin/main
 
 Estimates use the widely-cited ~4-chars-per-token rule (great for ranking and relative savings; pass `--price` to match your model).
 
 Vendored dependency and build output directories (`node_modules`, `dist`, `build`, ...) are reported as a single entry keyed by directory name — sized from a cheap stat walk without reading the files inside. Directory-level categories are decided by the directory name, not by reading its contents.
+
+Symlink aliases add no files or tokens: in-root targets are counted once at their real paths, including targets inside grouped directories. Links do not bypass `.git` exclusion, and directory links are not traversed. Broken, unresolvable and outside-root links are skipped with warnings in text output and a JSON `warnings` array of `{ path, reason }` entries. Paths are relative to the scan root; warnings do not change the exit code. Ignore suggestions use real paths rather than alias names.
 
 ## Usage
 
