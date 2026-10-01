@@ -2,6 +2,7 @@
 import { readdirSync, readFileSync, realpathSync, statSync, openSync, readSync, closeSync } from "node:fs";
 import { isAbsolute, join, relative, sep } from "node:path";
 import { classify, classifyPath, ignorePattern, VENDOR_DIRS, BUILD_DIRS } from "./classify.js";
+import { existingIgnoreMatcher } from "./existing-ignore.js";
 
 const ALWAYS_SKIP = new Set([".git"]);
 // Directory names that are vendored or build output: record once, never descend.
@@ -13,8 +14,9 @@ const MAX_READ = 5_000_000; // bytes fully read; larger files are estimated from
 export const estimateTokens = (text) => Math.ceil(text.length / 4);
 
 /** Cheap total token estimate for a directory: sum sibling sizes without reading contents. */
-function dirTokenEstimate(abs, inspectSymlink) {
+function dirTokenEstimate(abs, root, inspectSymlink, isIgnored) {
   let bytes = 0;
+  let files = 0;
   const stack = [abs];
   while (stack.length) {
     const dir = stack.pop();
@@ -22,14 +24,16 @@ function dirTokenEstimate(abs, inspectSymlink) {
     try { entries = readdirSync(dir, { withFileTypes: true }); } catch { continue; }
     for (const e of entries) {
       const child = join(dir, e.name);
+      const rel = relative(root, child).split(sep).join("/");
+      if (isIgnored(rel, e.isDirectory())) continue;
       if (e.isSymbolicLink()) { inspectSymlink(child); continue; }
       try {
         if (e.isDirectory()) stack.push(child);
-        else if (e.isFile()) bytes += statSync(child).size;
+        else if (e.isFile()) { bytes += statSync(child).size; files++; }
       } catch { /* skip unreadable entries */ }
     }
   }
-  return Math.ceil(bytes / 4);
+  return { tokens: Math.ceil(bytes / 4), files };
 }
 
 function fileInfo(abs, size) {
@@ -66,6 +70,7 @@ export function scanRepo(target, opts = {}) {
   const realRoot = realpathSync(root);
   const files = [];
   const warnings = [];
+  const isIgnored = existingIgnoreMatcher(root);
 
   // The ordinary walk counts in-root targets at their real paths (or in a
   // grouped directory). Never read an alias again or traverse directory links.
@@ -89,17 +94,20 @@ export function scanRepo(target, opts = {}) {
     for (const e of entries) {
       if (ALWAYS_SKIP.has(e.name)) continue;
       const abs = join(dir, e.name);
+      const rel = relative(root, abs).split(sep).join("/");
+      if (isIgnored(rel, e.isDirectory())) continue;
       if (e.isSymbolicLink()) { inspectSymlink(abs); continue; }
       if (e.isDirectory()) {
         const lower = e.name.toLowerCase();
         if (VENDOR_SKIP.has(lower) || BUILD_SKIP.has(lower)) {
           // Record the directory once by name; do not descend or read contents.
-          const rel = relative(root, abs).split(sep).join("/");
           const reason = VENDOR_SKIP.has(lower)
             ? "vendored dependency directory"
             : "build / generated output directory";
+          const estimate = dirTokenEstimate(abs, root, inspectSymlink, isIgnored);
+          if (estimate.files === 0) continue;
           files.push({
-            rel, size: 0, tokens: dirTokenEstimate(abs, inspectSymlink),
+            rel, size: 0, tokens: estimate.tokens,
             category: VENDOR_SKIP.has(lower) ? "vendored" : "build",
             trim: true, binary: false, reason,
           });
@@ -114,7 +122,6 @@ export function scanRepo(target, opts = {}) {
         if (!stat.isFile()) continue;
         size = stat.size;
       } catch { continue; }
-      const rel = relative(root, abs).split(sep).join("/");
       const pathClassification = classifyPath(rel);
       const info = pathClassification?.binary ? { tokens: 0, sample: "" } : fileInfo(abs, size);
       const c = pathClassification ?? classify(rel, { size, tokens: info.tokens, sample: info.sample, maxTokens });

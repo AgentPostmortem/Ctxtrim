@@ -3,6 +3,12 @@
 All notable changes to this project are documented here, following
 [Keep a Changelog](https://keepachangelog.com/) and semantic versioning.
 
+## [0.1.22] - 2026-09-29
+
+### Fixed
+
+- Exclude paths already covered by root `.gitignore`, `.cursorignore`, and `.claudeignore` files from recoverable-waste totals and suggestions.
+
 ## [0.1.21] - 2026-09-26
 
 ### Fixed
